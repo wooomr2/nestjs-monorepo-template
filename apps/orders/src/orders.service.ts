@@ -16,12 +16,15 @@ export class OrdersService {
     return 'Health Check!';
   }
 
-  async createOrder(request: CreateOrderRequest) {
+  async createOrder(request: CreateOrderRequest, authentication: string) {
     const session = await this.orderRepository.startTransaction();
     try {
       const order = await this.orderRepository.create(request, { session });
       await lastValueFrom(
-        this.billingClient.emit('order_created', { request }),
+        this.billingClient.emit('order_created', {
+          request: request,
+          Authentication: authentication,
+        }),
       );
       await session.commitTransaction();
 
